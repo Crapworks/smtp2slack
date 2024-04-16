@@ -16,4 +16,4 @@ FROM gcr.io/distroless/static-debian11
 
 COPY --from=base /smtp2slack .
 
-CMD ["./main"]
+ENTRYPOINT ["./smtp2slack"]
