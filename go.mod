@@ -12,6 +12,7 @@ require (
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
+	github.com/alexflint/go-scalar v1.1.0 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
@@ -25,4 +26,7 @@ require (
 	github.com/thecloakproject/utils v0.0.0-20160730041421-46a5577b3590
 )
 
-require github.com/ProtonMail/gopenpgp/v2 v2.7.5
+require (
+	github.com/ProtonMail/gopenpgp/v2 v2.7.5
+	github.com/alexflint/go-arg v1.4.3
+)

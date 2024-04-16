@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/Crapworks/smtp2slack/auth"
 	"github.com/ProtonMail/gopenpgp/v2/helper"
+	"github.com/alexflint/go-arg"
 	"github.com/mhale/smtpd"
 	"github.com/nlopes/slack"
 	"github.com/veqryn/go-email/email"
@@ -137,48 +137,45 @@ func (s *SmtpToSlack) listenAndServe(addr string) error {
 }
 
 func main() {
-	addStr := flag.String("addr", "0.0.0.0:2525", "address string to listen on")
-	channel := flag.String("channel", "#mail", "channel to forward the mails to")
-	token := flag.String("token", "", "slack authentication token")
-	authStr := flag.String("auth", "", "user:passwd combination for authentication")
-	encSenders := flag.String("encrypted_senders", "", "sender addresses which mails should be encrypted")
-	pubKey := flag.String("pubkey", "", "path to a file that contains the public key for encryption")
-	flag.Parse()
-
-	// Validation
-	if *token == "" {
-		log.Fatal("-token parameter is missing but required")
+	var args struct {
+		Addr             string   `arg:"env:LISTEN_ADDR" default:"0.0.0.0:2525" help:"address string to listen on"`
+		Channel          []string `arg:"env:CHANNEL,required" help:"channel to forward the mails to"`
+		Token            string   `arg:"env:TOKEN,required" help:"slack authentication token"`
+		Auth             string   `arg:"env:AUTH" help:"user:passwd combination for authentication"`
+		EncryptedSenders []string `arg:"env:ENCRYPTED_SENDERS" help:"sender addresses which mails should be encrypted"`
+		PubKey           string   `arg:"env:PUBKEY" help:"path to a file that contains the public key for encryption"`
 	}
+	arg.MustParse(&args)
 
-	if *encSenders != "" && *pubKey == "" {
-		log.Fatal("-encrypted_senders specified but no -pubkey provided for encryption")
+	if len(args.EncryptedSenders) > 0 && args.PubKey == "" {
+		log.Fatal("-encryptedsenders specified but no -pubkey provided for encryption")
 	}
 
 	var publicKey []byte
 	var err error
-	if *pubKey != "" {
-		publicKey, err = os.ReadFile(*pubKey)
+	if args.PubKey != "" {
+		publicKey, err = os.ReadFile(args.PubKey)
 		if err != nil {
 			log.Fatalf("error opening public key file: %s", err)
 		}
 	}
 
 	auth := auth.New()
-	err = auth.SetSMTPAuth(*authStr)
+	err = auth.SetSMTPAuth(args.Auth)
 	if err != nil {
 		log.Printf("unable to parse credentials: %s", err)
 	}
 	s := New(&Config{
-		addr:       *addStr,
-		authToken:  *token,
-		channels:   []string{*channel},
+		addr:       args.Addr,
+		authToken:  args.Token,
+		channels:   args.Channel,
 		auth:       *auth,
-		encSenders: []string{*encSenders},
+		encSenders: args.EncryptedSenders,
 		pubKey:     string(publicKey),
 	})
 
-	log.Printf("[server] listening for mail on %s", *addStr)
-	err = s.listenAndServe(*addStr)
+	log.Printf("[server] listening for mail on %s", args.Addr)
+	err = s.listenAndServe(args.Addr)
 	if err != nil {
 		log.Printf("error starting server: %s", err)
 	}
