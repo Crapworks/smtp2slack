@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: smtp2slack
 resources:
 - ns.yaml
-- ../secret
-- ../deployment
-- ../service
+- ../secret/smpt-secrets.yaml
+- ../deployment/smtp2slack.yaml
+- ../service/stmp-service.yaml
