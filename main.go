@@ -80,12 +80,12 @@ func (s *SmtpToSlack) mailHandler(origin net.Addr, from string, to []string, dat
 
 	err = s.uploadSlack(from, to[0], msg, "text/plain")
 	if err != nil {
-		log.Printf("error parsing message: %s", err)
+		log.Printf("error uploading text/plain message: %s", err)
 		return err
 	}
 	err = s.uploadSlack(from, to[0], msg, "text/html")
 	if err != nil {
-		log.Printf("error parsing message: %s", err)
+		log.Printf("error uploading text/html message: %s", err)
 		return err
 	}
 	return nil
