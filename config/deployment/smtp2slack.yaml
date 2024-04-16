@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: smtp2slack
+  name: smtp2slack
+  namespace: smtp2slack
+spec:
+  selector:
+    matchLabels:
+      app: smtp2slack
+  template:
+    metadata:
+      labels:
+        app: smtp2slack
+    spec:
+      containers:
+      - image: ghcr.io/crapworks/smtp2slack:v0.5
+        name: smtp2slack
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slacktoken
+              key: token
+        - name: AUTH
+          valueFrom:
+            secretKeyRef:
+              name: smtpauth
+              key: auth
+        - name: LISTEN_ADDR
+          value: 0.0.0.0:2525
+        - name: CHANNEL
+          value: "#mail"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 2525
+          name: smtp
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /pgp
+          name: pubkey
+          readOnly: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - name: pubkey
+        secret:
+          defaultMode: 420
+          secretName: smtp2slack-pubkey
