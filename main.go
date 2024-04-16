@@ -15,15 +15,6 @@ import (
 	"github.com/veqryn/go-email/email"
 )
 
-type Config struct {
-	addr       string
-	authToken  string
-	channels   []string
-	encSenders []string
-	pubKey     string
-	auth       auth.SmtpAuth
-}
-
 type SmtpToSlack struct {
 	slack      *slack.Client
 	authToken  string
@@ -31,17 +22,6 @@ type SmtpToSlack struct {
 	encSenders []string
 	auth       auth.SmtpAuth
 	pubKey     string
-}
-
-func New(cfg *Config) *SmtpToSlack {
-	return &SmtpToSlack{
-		slack:      slack.New(cfg.authToken),
-		authToken:  cfg.authToken,
-		channels:   cfg.channels,
-		encSenders: cfg.encSenders,
-		auth:       cfg.auth,
-		pubKey:     cfg.pubKey,
-	}
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -165,14 +145,15 @@ func main() {
 	if err != nil {
 		log.Printf("unable to parse credentials: %s", err)
 	}
-	s := New(&Config{
-		addr:       args.Addr,
+
+	s := SmtpToSlack{
+		slack:      slack.New(args.Token),
 		authToken:  args.Token,
 		channels:   args.Channel,
 		auth:       *auth,
 		encSenders: args.EncryptedSenders,
 		pubKey:     string(publicKey),
-	})
+	}
 
 	log.Printf("[server] listening for mail on %s", args.Addr)
 	err = s.listenAndServe(args.Addr)
