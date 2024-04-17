@@ -65,3 +65,47 @@ spec:
         secret:
           defaultMode: 420
           secretName: smtp2slack-pubkey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: smtp2slack
+  name: smtp2slack-smtp
+  namespace: smtp2slack
+spec:
+  ports:
+  - name: smtp
+    port: 25
+    protocol: TCP
+    targetPort: 2525
+  selector:
+    app: smtp2slack
+  type: LoadBalancer
+apiVersion: v1
+---
+kind: Secret
+metadata:
+  name: smtp2slack-pubkey
+  namespace: smtp2slack
+type: Opaque
+data:
+  public.pgp: Cg==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slacktoken
+  namespace: smtp2slack
+type: Opaque
+data:
+  token: Cg==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smtpauth
+  namespace: smtp2slack
+type: Opaque
+data:
+  auth: Cg==
