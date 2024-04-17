@@ -82,8 +82,8 @@ spec:
   selector:
     app: smtp2slack
   type: LoadBalancer
-apiVersion: v1
 ---
+apiVersion: v1
 kind: Secret
 metadata:
   name: smtp2slack-pubkey
