@@ -22,6 +22,8 @@ type SmtpToSlack struct {
 	encSenders []string
 	auth       auth.SmtpAuth
 	pubKey     string
+	TLSCert    string
+	TLSKey     string
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -113,6 +115,14 @@ func (s *SmtpToSlack) listenAndServe(addr string) error {
 		srv.AuthRequired = true
 	}
 
+	if s.TLSCert != "" {
+		srv.TLSRequired = true
+		srv.TLSListener = true
+		if err := srv.ConfigureTLS(s.TLSCert, s.TLSKey); err != nil {
+			return err
+		}
+	}
+
 	return srv.ListenAndServe()
 }
 
@@ -124,11 +134,17 @@ func main() {
 		Auth             string   `arg:"env:AUTH" help:"user:passwd combination for authentication"`
 		EncryptedSenders []string `arg:"env:ENCRYPTED_SENDERS" help:"sender addresses which mails should be encrypted"`
 		PubKey           string   `arg:"env:PUBKEY" help:"path to a file that contains the public key for encryption"`
+		TLSCert          string   `arg:"env:TLSCERT" help:"path to tls certificate"`
+		TLSKey           string   `arg:"env:TLSKEY" help:"path to tls key"`
 	}
 	arg.MustParse(&args)
 
 	if len(args.EncryptedSenders) > 0 && args.PubKey == "" {
 		log.Fatal("-encryptedsenders specified but no -pubkey provided for encryption")
+	}
+
+	if (args.TLSCert != "" && args.TLSKey == "") || (args.TLSKey != "" && args.TLSCert == "") {
+		log.Fatal("--tlskey and --tlscert are required to be set together but only one is set")
 	}
 
 	var publicKey []byte
@@ -153,6 +169,8 @@ func main() {
 		auth:       *auth,
 		encSenders: args.EncryptedSenders,
 		pubKey:     string(publicKey),
+		TLSCert:    args.TLSCert,
+		TLSKey:     args.TLSKey,
 	}
 
 	log.Printf("[server] listening for mail on %s", args.Addr)
