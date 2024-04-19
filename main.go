@@ -117,7 +117,7 @@ func (s *SmtpToSlack) listenAndServe(addr string) error {
 
 	if s.TLSCert != "" {
 		srv.TLSRequired = true
-		srv.TLSListener = true
+		srv.TLSListener = false // Use STARTTLS instead
 		if err := srv.ConfigureTLS(s.TLSCert, s.TLSKey); err != nil {
 			return err
 		}
