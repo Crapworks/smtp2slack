@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Crapworks/smtp2slack/auth"
+	"github.com/Crapworks/smtp2slack/kubernetes"
 	"github.com/ProtonMail/gopenpgp/v2/helper"
 	"github.com/alexflint/go-arg"
 	"github.com/mhale/smtpd"
@@ -154,6 +155,13 @@ func main() {
 		if err != nil {
 			log.Fatalf("error opening public key file: %s", err)
 		}
+	}
+
+	k8s, err := kubernetes.New()
+	if err != nil {
+		log.Printf("failed to create kubernetes client: %s", err)
+	} else {
+		k8s.ListNamespaces()
 	}
 
 	auth := auth.New()
