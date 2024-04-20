@@ -3,14 +3,12 @@ package kubernetes
 import (
 	"context"
 	"log"
-	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	toolsWatch "k8s.io/client-go/tools/watch"
 )
 
@@ -20,7 +18,7 @@ type KubernetesClient struct {
 }
 
 func New() (*KubernetesClient, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
 	}
