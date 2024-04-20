@@ -7,6 +7,7 @@ RUN go mod download
 
 COPY main.go ./
 COPY auth ./auth
+COPY kubernetes ./kubernetes
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /smtp2slack
 
