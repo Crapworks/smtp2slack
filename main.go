@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/Crapworks/smtp2slack/auth"
 	"github.com/Crapworks/smtp2slack/kubernetes"
@@ -127,6 +128,21 @@ func (s *SmtpToSlack) listenAndServe(addr string) error {
 	return srv.ListenAndServe()
 }
 
+func parseWatchSecret(watchsecret string) (string, string, error) {
+	var ParseError = fmt.Errorf("unable to parse watchsecret string: %s. format: namespace:secretname", watchsecret)
+	s := strings.Split(watchsecret, ":")
+	if len(s) != 2 {
+		return "", "", ParseError
+	}
+
+	namespace, secret := s[0], s[1]
+
+	if namespace == "" || secret == "" {
+		return "", "", ParseError
+	}
+	return namespace, secret, nil
+}
+
 func main() {
 	var args struct {
 		Addr             string   `arg:"env:LISTEN_ADDR" default:"0.0.0.0:2525" help:"address string to listen on"`
@@ -137,6 +153,7 @@ func main() {
 		PubKey           string   `arg:"env:PUBKEY" help:"path to a file that contains the public key for encryption"`
 		TLSCert          string   `arg:"env:TLSCERT" help:"path to tls certificate"`
 		TLSKey           string   `arg:"env:TLSKEY" help:"path to tls key"`
+		WatchSecret      string   `arg:"env:WATCHSECRET" help:"watch secret and restart if it is changed. format is namespace:secretname"`
 	}
 	arg.MustParse(&args)
 
@@ -148,6 +165,21 @@ func main() {
 		log.Fatal("--tlskey and --tlscert are required to be set together but only one is set")
 	}
 
+	if args.WatchSecret != "" {
+		namespace, secret, err := parseWatchSecret(args.WatchSecret)
+		if err != nil {
+			log.Printf("[watch] error: %s", err)
+		} else {
+			log.Printf("[watch] watching secret %s in namespace %s for changes.", secret, namespace)
+			k8s, err := kubernetes.New()
+			if err != nil {
+				log.Printf("failed to create kubernetes client: %s", err)
+			} else {
+				go k8s.WatchSecret(namespace, secret)
+			}
+		}
+	}
+
 	var publicKey []byte
 	var err error
 	if args.PubKey != "" {
@@ -155,13 +187,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("error opening public key file: %s", err)
 		}
-	}
-
-	k8s, err := kubernetes.New()
-	if err != nil {
-		log.Printf("failed to create kubernetes client: %s", err)
-	} else {
-		k8s.ListNamespaces()
 	}
 
 	auth := auth.New()

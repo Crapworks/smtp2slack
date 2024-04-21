@@ -3,8 +3,10 @@ package kubernetes
 import (
 	"context"
 	"log"
+	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -32,39 +34,26 @@ func New() (*KubernetesClient, error) {
 	}, nil
 }
 
-func (k *KubernetesClient) WatchSecret(namespace string, secret string) error {
+func (k *KubernetesClient) WatchSecret(namespace string, secret string) {
 	watchFunc := func(options metav1.ListOptions) (watch.Interface, error) {
 		timeOut := int64(60)
-		return k.clientset.CoreV1().Secrets(namespace).Watch(context.Background(), metav1.ListOptions{TimeoutSeconds: &timeOut})
+		return k.clientset.CoreV1().Secrets(namespace).Watch(context.Background(), metav1.ListOptions{
+			FieldSelector: "metadata.name=" + secret, TimeoutSeconds: &timeOut,
+		})
 	}
-
 	watcher, err := toolsWatch.NewRetryWatcher("1", &cache.ListWatch{WatchFunc: watchFunc})
 	if err != nil {
-		return err
+		return
 	}
 
 	for event := range watcher.ResultChan() {
 		switch event.Type {
 		case watch.Modified:
-		case watch.Bookmark:
-		case watch.Error:
+			log.Printf("[watch] secret %s had event %s - exiting to reload", secret, event.Type)
+			os.Exit(0)
 		case watch.Deleted:
-		case watch.Added:
-			return nil
+			log.Printf("[watch] secret %s had event %s - exiting to reload", secret, event.Type)
+			os.Exit(0)
 		}
 	}
-	return nil // return and error here?
-}
-
-func (k *KubernetesClient) ListNamespaces() error {
-	list, err := k.clientset.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
-
-	if err != nil {
-		return err
-	}
-
-	for _, item := range list.Items {
-		log.Printf(item.Name)
-	}
-	return nil
 }
