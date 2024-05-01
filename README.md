@@ -2,9 +2,6 @@
 
 This is small go program that runs an STMP server, forwarding all incoming messages to Slack.
 
-> [!CAUTION]
-> This is a personal playground project. Maybe someone finds the code useful and can implement it's own use case with it. This is the first time I wrote anything in Go and it sure shows.
-
 ## What for?
 
 I am running a couple of servers at home and many tools still want an SMTP server to send notifications. But E-Mail is hard and most mail providers suck. Since I already get many notifications from Grafana, TrueNAS, etc. via Slack, I wrote this tool to run in my k8s cluster and provide STMP for services that need it.
