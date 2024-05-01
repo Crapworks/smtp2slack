@@ -65,7 +65,7 @@ If you are using SMTP authentication, you want to make sure that your passwords 
 
 ## TLS with Cert-Manager on Kubernetes
 
-I run `smtp2slack` in my kubernetes cluster together with [cert-manager](), which issues and renews letsencrypt certificates for me. In order to use a new certificate once it has been updated by `cert-manager`, `smtp2slack` needs to restart in order to use it. To automate that, you can tell `smtp2slack` that it runs in a kubernetes cluster and what secret it should watch. Once that secret changes, `smtp2slack` will restart and use it. The format of the parameter is `namespace`:`secret`. So to watch a secret called `smtpcert` in namespace `smtp2slack` the command is:
+I run `smtp2slack` in my kubernetes cluster together with [cert-manager](https://cert-manager.io/), which issues and renews letsencrypt certificates for me. In order to use a new certificate once it has been updated by `cert-manager`, `smtp2slack` needs to restart in order to use it. To automate that, you can tell `smtp2slack` that it runs in a kubernetes cluster and what secret it should watch. Once that secret changes, `smtp2slack` will restart and use it. The format of the parameter is `namespace`:`secret`. So to watch a secret called `smtpcert` in namespace `smtp2slack` the command is:
 
 ```bash
 ./smpt2slack -channel "#mail" -token "slack-bot-auth-token" -watchsecret "smtp2slack:smtpcert"
