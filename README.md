@@ -15,18 +15,6 @@ I am using this as well for systems like Authelia and Vaultwarden, who wants to 
 
 You can configure `smtp2slack` either via command line switches or via environment variables. Command line switches will override environment variables if both are used:
 
-  --addr ADDR            address string to listen on [default: 0.0.0.0:2525, env: LISTEN_ADDR]
-  --channel CHANNEL      channel to forward the mails to [env: CHANNEL]
-  --token TOKEN          slack authentication token [env: TOKEN]
-  --auth AUTH            user:passwd combination for authentication [env: AUTH]
-  --encryptedsenders ENCRYPTEDSENDERS
-                         sender addresses which mails should be encrypted [env: ENCRYPTED_SENDERS]
-  --pubkey PUBKEY        path to a file that contains the public key for encryption [env: PUBKEY]
-  --tlscert TLSCERT      path to tls certificate [env: TLSCERT]
-  --tlskey TLSKEY        path to tls key [env: TLSKEY]
-  --watchsecret WATCHSECRET
-
-
 | Command line       | Environment   | Description |
 | -------------------| ------------- | ----------- |
 | --addr ADDR        | LISTEN_ADDR   | address string to listen on (default: 0.0.0.0:2525)  |
